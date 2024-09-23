@@ -1,5 +1,5 @@
 export function fibonacci(i: number): number {
-  if (i < 0) {
+  if (i < 0){
     throw new Error("Cannot compute on negative numbers");
   }
   if (i == 0) {
