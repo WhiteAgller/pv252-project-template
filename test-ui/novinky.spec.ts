@@ -15,12 +15,10 @@ test('has krimi section', async ({ page }) => {
     await expect(page.getByRole('link', { name: 'Krimi »' })).toBeVisible();
 });
 
-test('has accept button to give consent', async ({ page }) => {
+test('first article has image', async ({ page }) => {
     await page.goto('https://www.novinky.cz/');
-    await page.getByLabel('záhlaví').getByRole('link', { name: 'Domácí', exact: true }).click()
-    await page.waitForURL('**/nastaveni-souhlasu?service**');
-    var button = page.getByTestId('cw-button-non-targeted-ad');
-    expect(button).toBeDefined();
+    var article = page.locator('[data-e2e="content-item"]').first();
+    var img = article.locator('.c_s');
+    await expect(img).toBeVisible();
+    await expect(img).toHaveAttribute('src');
 });
-
-
