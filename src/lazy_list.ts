@@ -51,6 +51,10 @@ export class LazyList<T> extends HTMLElement {
   #bottomOffset: number = 0;
   #bottomOffsetElement: HTMLElement;
 
+  #visibleItemCount: number = 0;
+
+  #renderedItemsCount: number = 5;
+
   // The container that stores the spacer elements and the slot where items are inserted.
   #listElement: HTMLElement;
 
@@ -91,33 +95,29 @@ export class LazyList<T> extends HTMLElement {
   }
 
   #contentChanged() {
-    // "Naive list" solution: just add all elements as children to this list,
-    // and they will be placed inside the inner <slot></slot> element.
-    // this.innerHTML = "";
-    // for (const item of this.#data) {
-    // this.#listElement.appendChild(...)
-    //  this.appendChild(this.#renderFunction(item)); // places the children
-    //}
-
-    // Show only one item (for debugging, we will extend to more (visible)
-    // items later).
     this.innerHTML = "";
-    if (this.#data.length > 0) {
-      this.appendChild(this.#renderFunction(this.#data[0]));
+    for (let i = 0; i < this.#renderedItemsCount && this.#visiblePosition + i < this.#data.length; i++) {
+      const item = this.#data[this.#visiblePosition + i];
+      const renderedItem = this.#renderFunction(item);
+      this.appendChild(renderedItem);
     }
   }
 
   #scrollPositionChanged(topOffset: number) {
-    console.log(topOffset);
+    const itemHeigh = 370;
+    
+    this.#visiblePosition = Math.floor(topOffset / itemHeigh);
 
-    // Update the height of the top offset to match the current scroll position.
-    // The effect should be that the content stays visible in one even
-    // though the user is scrolling.
+    this.#topOffset = this.#visiblePosition * itemHeigh;
     this.#topOffsetElement.style.height = `${topOffset}px`;
-    // Because the browser will "shift" the visible area to match the height change
-    // we just did, we need to also reset the scroll position to
-    // the one we originally observed (i.e. the one to which we are
-    // adjusting the offset).
+
+    const bottomOffsetItemCount = this.#data.length - this.#visiblePosition - this.#renderedItemsCount;
+    this.#bottomOffset = Math.max(0, bottomOffsetItemCount * itemHeigh);
+
+    this.#topOffsetElement.style.height = `${this.#topOffset}px`;
+    this.#bottomOffsetElement.style.height = `${this.#bottomOffset}px`;
+  
     this.#listElement.scrollTop = topOffset;
+    this.#contentChanged();
   }
 }
